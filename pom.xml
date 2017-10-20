@@ -36,15 +36,9 @@
     </description>
 
     <scm>
-        <connection>
-            scm:svn:http://svn.apache.org/repos/asf/sling/trunk/contrib/extensions/tenant
-        </connection>
-        <developerConnection>
-            scm:svn:https://svn.apache.org/repos/asf/sling/trunk/contrib/extensions/tenant
-        </developerConnection>
-        <url>
-            http://svn.apache.org/viewvc/sling/trunk/contrib/extensions/tenant
-        </url>
+        <connection>scm:git:https://gitbox.apache.org/repos/asf/sling-org-apache-sling-tenant.git</conncetion>
+        <developerConnection>scm:git:https://gitbox.apache.org/repos/asf/sling-org-apache-sling-tenant.git</developerConnection>
+        <url>https://gitbox.apache.org/repos/asf?p=sling-org-apache-sling-tenant.git</url>
     </scm>
 
     <build>
