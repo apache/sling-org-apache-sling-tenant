@@ -119,11 +119,13 @@ class TenantAdapterFactory implements AdapterFactory {
     		try {
     			Authorizable authorizable = jrSession.getUserManager()
     					.getAuthorizable(userID);
-    			String userHome = authorizable.getPath();
-
-    			// tries to get tenant information from user home
-    			// i.e. /home/users/tenant1/a/admin
-    			return getAdapter(userHome, type);
+    			if (authorizable != null) {
+        			String userHome = authorizable.getPath();
+    
+        			// tries to get tenant information from user home
+        			// i.e. /home/users/tenant1/a/admin
+        			return getAdapter(userHome, type);
+    			}
     		} catch (Exception e) {
     			log.error("can not get user from session", e);
     		}
