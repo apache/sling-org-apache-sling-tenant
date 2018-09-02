@@ -107,7 +107,7 @@ public interface TenantManager {
      * unless the {@code properties} parameter is {@code null} or empty.
      *
      * @param tenant The tenant from which to remove properties.
-     * @param properties The list of properties to be removed. If this is
+     * @param propertyNames The list of properties to be removed. If this is
      *            {@code null} or empty, nothing happens and the
      *            {@link org.apache.sling.tenant.spi.TenantCustomizer} is not
      *            called.
