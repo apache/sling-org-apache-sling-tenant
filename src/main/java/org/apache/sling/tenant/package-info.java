@@ -17,10 +17,7 @@
  * under the License.
  */
 
-@Version("1.0")
-@Export(optional = "provide:=true")
+@Version("1.0.1")
 package org.apache.sling.tenant;
 
-import aQute.bnd.annotation.Export;
-import aQute.bnd.annotation.Version;
-
+import org.osgi.annotation.versioning.Version;

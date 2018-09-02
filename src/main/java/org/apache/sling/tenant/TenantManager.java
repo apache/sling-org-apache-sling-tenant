@@ -20,7 +20,7 @@ package org.apache.sling.tenant;
 
 import java.util.Map;
 
-import aQute.bnd.annotation.ProviderType;
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * The <code>TenantManager</code> service interface defines the API that

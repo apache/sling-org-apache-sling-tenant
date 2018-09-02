@@ -20,7 +20,7 @@ package org.apache.sling.tenant;
 
 import java.util.Iterator;
 
-import aQute.bnd.annotation.ProviderType;
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * The <code>Tenant</code> interface represents a tenant which may be used to

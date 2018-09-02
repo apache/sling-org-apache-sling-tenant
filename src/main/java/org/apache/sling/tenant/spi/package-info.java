@@ -17,8 +17,7 @@
  * under the License.
  */
 
-@Version("1.1")
+@Version("1.1.1")
 package org.apache.sling.tenant.spi;
 
-import aQute.bnd.annotation.Version;
-
+import org.osgi.annotation.versioning.Version;
