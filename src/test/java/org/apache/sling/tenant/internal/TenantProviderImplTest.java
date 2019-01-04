@@ -18,6 +18,7 @@
  */
 package org.apache.sling.tenant.internal;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -41,7 +42,21 @@ public class TenantProviderImplTest {
         Mockito.when(rrf.getServiceResourceResolver(
                 Mockito.anyMapOf(String.class, Object.class))).thenReturn(rr);
         set(provider, "factory", rrf);
-        provider.activate(context, new HashMap<String, Object>());
+        TenantProviderImpl.Configuration configuration = new TenantProviderImpl.Configuration() {
+            @Override
+            public Class<? extends Annotation> annotationType() {
+                return null;
+            }
+            @Override
+            public String tenant_root() {
+                return "/etc/tenants";
+            }
+            @Override
+            public String[] tenant_path_matcher() {
+                return new String[] {};
+            }
+        };
+        provider.activate(context, configuration);
         Iterator<Tenant> tenants = provider.getTenants();
         TestCase.assertNotNull(tenants);
         TestCase.assertFalse(tenants.hasNext());
