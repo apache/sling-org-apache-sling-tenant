@@ -36,7 +36,6 @@ import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
 import org.apache.sling.api.resource.ResourceUtil;
-import org.apache.sling.commons.osgi.PropertiesUtil;
 import org.apache.sling.commons.osgi.ServiceUtil;
 import org.apache.sling.tenant.Tenant;
 import org.apache.sling.tenant.TenantManager;
@@ -101,18 +100,16 @@ public class TenantProviderImpl implements TenantProvider, TenantManager {
 
         @AttributeDefinition(
             name = "Tenants Root Path",
-            description = "Defines tenants root path",
-            defaultValue = RESOURCE_TENANT_ROOT
+                description = "Defines tenants root path"
         )
-        String tenant_root();
+        String tenant_root() default RESOURCE_TENANT_ROOT;
+
         @AttributeDefinition(
             name = "Tenants Path Matcher",
             description = "Defines tenants path matcher i.e. /content/sample/([^/]+)/*, used while resolving path to tenant"
         )
-        String[] tenant_path_matcher();
+        String[] tenant_path_matcher() default {};
     }
-
-    private static final String[] DEFAULT_PATH_MATCHER = {};
 
     private SortedMap<Comparable<Object>, TenantCustomizer> registeredTenantHandlers = new TreeMap<Comparable<Object>, TenantCustomizer>(
         Collections.reverseOrder());
@@ -131,8 +128,8 @@ public class TenantProviderImpl implements TenantProvider, TenantManager {
 
     @Activate
     protected void activate(final BundleContext bundleContext, final Configuration configuration) {
-        this.tenantRootPath = PropertiesUtil.toString(configuration.tenant_root(), RESOURCE_TENANT_ROOT);
-        this.adapterFactory = new TenantAdapterFactory(bundleContext, this, PropertiesUtil.toStringArray(configuration.tenant_path_matcher(), DEFAULT_PATH_MATCHER));
+        this.tenantRootPath = configuration.tenant_root();
+        this.adapterFactory = new TenantAdapterFactory(bundleContext, this, configuration.tenant_path_matcher());
         this.plugin = new WebConsolePlugin(bundleContext, this);
     }
 
