@@ -29,16 +29,6 @@ import java.util.Map.Entry;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-import org.apache.felix.scr.annotations.Activate;
-import org.apache.felix.scr.annotations.Component;
-import org.apache.felix.scr.annotations.Deactivate;
-import org.apache.felix.scr.annotations.Property;
-import org.apache.felix.scr.annotations.PropertyUnbounded;
-import org.apache.felix.scr.annotations.Reference;
-import org.apache.felix.scr.annotations.ReferenceCardinality;
-import org.apache.felix.scr.annotations.ReferencePolicy;
-import org.apache.felix.scr.annotations.References;
-import org.apache.felix.scr.annotations.Service;
 import org.apache.sling.api.resource.LoginException;
 import org.apache.sling.api.resource.ModifiableValueMap;
 import org.apache.sling.api.resource.PersistenceException;
@@ -59,6 +49,15 @@ import org.osgi.framework.Constants;
 import org.osgi.framework.Filter;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.InvalidSyntaxException;
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Deactivate;
+import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.ReferenceCardinality;
+import org.osgi.service.component.annotations.ReferencePolicy;
+import org.osgi.service.metatype.annotations.AttributeDefinition;
+import org.osgi.service.metatype.annotations.Designate;
+import org.osgi.service.metatype.annotations.ObjectClassDefinition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -66,24 +65,26 @@ import org.slf4j.LoggerFactory;
  * Resource based Tenant Provider implementation.
  */
 @Component(
-        metatype = true,
-        label = "Apache Sling Tenant Provider",
-        description = "Service responsible for providing Tenants",
-        immediate = true)
-@Service(value = {TenantProvider.class, TenantManager.class})
-@Property(name = Constants.SERVICE_DESCRIPTION, value = "Apache Sling Tenant Provider")
-@References({
-    @Reference(
-        name = "tenantSetup",
-        referenceInterface = TenantCustomizer.class,
-        cardinality = ReferenceCardinality.OPTIONAL_MULTIPLE,
-        policy = ReferencePolicy.DYNAMIC),
-    @Reference(
-            name = "hook",
-            referenceInterface = TenantManagerHook.class,
-            cardinality = ReferenceCardinality.OPTIONAL_MULTIPLE,
-            policy = ReferencePolicy.DYNAMIC)
-})
+    service = {TenantProvider.class, TenantManager.class},
+    property = {
+            Constants.SERVICE_VENDOR + "=The Apache Software Foundation",
+            Constants.SERVICE_DESCRIPTION + "=Apache Sling Tenant Provider"
+    },
+    immediate = true,
+    reference = {
+        @Reference(
+            name = "tenantSetup",
+            service = TenantCustomizer.class,
+            cardinality = ReferenceCardinality.MULTIPLE,
+            policy = ReferencePolicy.DYNAMIC),
+        @Reference(
+                name = "hook",
+                service = TenantManagerHook.class,
+                cardinality = ReferenceCardinality.MULTIPLE,
+                policy = ReferencePolicy.DYNAMIC)
+    }
+)
+@Designate(ocd = TenantProviderImpl.Configuration.class)
 public class TenantProviderImpl implements TenantProvider, TenantManager {
 
     /** default log */
@@ -94,8 +95,22 @@ public class TenantProviderImpl implements TenantProvider, TenantManager {
      */
     private static final String RESOURCE_TENANT_ROOT = "/etc/tenants";
 
-    @Property(value = RESOURCE_TENANT_ROOT, label = "Tenants Root Path", description = "Defines tenants root path")
-    private static final String TENANT_ROOT = "tenant.root";
+    @ObjectClassDefinition(name = "Apache Sling Tenant Provider",
+            description = "Service responsible for providing Tenants.")
+    public @interface Configuration {
+
+        @AttributeDefinition(
+            name = "Tenants Root Path",
+            description = "Defines tenants root path",
+            defaultValue = RESOURCE_TENANT_ROOT
+        )
+        String tenant_root();
+        @AttributeDefinition(
+            name = "Tenants Path Matcher",
+            description = "Defines tenants path matcher i.e. /content/sample/([^/]+)/*, used while resolving path to tenant"
+        )
+        String[] tenant_path_matcher();
+    }
 
     private static final String[] DEFAULT_PATH_MATCHER = {};
 
@@ -104,13 +119,6 @@ public class TenantProviderImpl implements TenantProvider, TenantManager {
 
     private SortedMap<Comparable<Object>, TenantManagerHook> registeredHooks = new TreeMap<Comparable<Object>, TenantManagerHook>(
             Collections.reverseOrder());
-
-    @Property(
-            value = {},
-            unbounded = PropertyUnbounded.ARRAY,
-            label = "Tenants Path Matcher",
-            description = "Defines tenants path matcher i.e. /content/sample/([^/]+)/*, used while resolving path to tenant")
-    private static final String TENANT_PATH_MATCHER = "tenant.path.matcher";
 
     private String tenantRootPath = RESOURCE_TENANT_ROOT;
 
@@ -122,9 +130,9 @@ public class TenantProviderImpl implements TenantProvider, TenantManager {
     private WebConsolePlugin plugin;
 
     @Activate
-    protected void activate(final BundleContext bundleContext, final Map<String, Object> properties) {
-        this.tenantRootPath = PropertiesUtil.toString(properties.get(TENANT_ROOT), RESOURCE_TENANT_ROOT);
-        this.adapterFactory = new TenantAdapterFactory(bundleContext, this, PropertiesUtil.toStringArray(properties.get(TENANT_PATH_MATCHER), DEFAULT_PATH_MATCHER));
+    protected void activate(final BundleContext bundleContext, final Configuration configuration) {
+        this.tenantRootPath = PropertiesUtil.toString(configuration.tenant_root(), RESOURCE_TENANT_ROOT);
+        this.adapterFactory = new TenantAdapterFactory(bundleContext, this, PropertiesUtil.toStringArray(configuration.tenant_path_matcher(), DEFAULT_PATH_MATCHER));
         this.plugin = new WebConsolePlugin(bundleContext, this);
     }
 
