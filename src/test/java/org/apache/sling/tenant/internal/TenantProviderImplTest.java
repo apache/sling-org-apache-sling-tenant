@@ -35,13 +35,11 @@ public class TenantProviderImplTest {
 
     @Test
     public void testListTenantsWithoutTenantRoot() throws Exception {
-        TenantProviderImpl provider = new TenantProviderImpl();
         final ResourceResolverFactory rrf = Mockito.mock(ResourceResolverFactory.class);
         final BundleContext context = Mockito.mock(BundleContext.class);
         final ResourceResolver rr = Mockito.mock(ResourceResolver.class);
         Mockito.when(rrf.getServiceResourceResolver(
                 Mockito.anyMapOf(String.class, Object.class))).thenReturn(rr);
-        set(provider, "factory", rrf);
         TenantProviderImpl.Configuration configuration = new TenantProviderImpl.Configuration() {
             @Override
             public Class<? extends Annotation> annotationType() {
@@ -56,16 +54,9 @@ public class TenantProviderImplTest {
                 return new String[] {};
             }
         };
-        provider.activate(context, configuration);
+        TenantProviderImpl provider = new TenantProviderImpl(context, null, rrf, configuration);
         Iterator<Tenant> tenants = provider.getTenants();
         TestCase.assertNotNull(tenants);
         TestCase.assertFalse(tenants.hasNext());
     }
-
-    private static void set(Object o, String name, Object value) throws Exception {
-        final Field f = o.getClass().getDeclaredField(name);
-        f.setAccessible(true);
-        f.set(o, value);
-    }
-
 }

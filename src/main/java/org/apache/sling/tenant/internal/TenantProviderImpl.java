@@ -43,6 +43,7 @@ import org.apache.sling.tenant.TenantProvider;
 import org.apache.sling.tenant.internal.console.WebConsolePlugin;
 import org.apache.sling.tenant.spi.TenantCustomizer;
 import org.apache.sling.tenant.spi.TenantManagerHook;
+import org.apache.sling.xss.XSSAPI;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.Constants;
 import org.osgi.framework.Filter;
@@ -54,6 +55,7 @@ import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.osgi.service.component.annotations.ReferencePolicy;
+import org.osgi.service.component.annotations.ReferencePolicyOption;
 import org.osgi.service.metatype.annotations.AttributeDefinition;
 import org.osgi.service.metatype.annotations.Designate;
 import org.osgi.service.metatype.annotations.ObjectClassDefinition;
@@ -119,18 +121,21 @@ public class TenantProviderImpl implements TenantProvider, TenantManager {
 
     private String tenantRootPath = RESOURCE_TENANT_ROOT;
 
-    @Reference
-    private ResourceResolverFactory factory;
+    private final ResourceResolverFactory factory;
 
     private TenantAdapterFactory adapterFactory;
 
     private WebConsolePlugin plugin;
 
     @Activate
-    protected void activate(final BundleContext bundleContext, final Configuration configuration) {
+    public TenantProviderImpl(final BundleContext bundleContext, 
+        final @Reference(policyOption = ReferencePolicyOption.GREEDY) XSSAPI xss,
+        final @Reference ResourceResolverFactory resourceResolverFactory,
+        final Configuration configuration) {
+        this.factory = resourceResolverFactory;
         this.tenantRootPath = configuration.tenant_root();
         this.adapterFactory = new TenantAdapterFactory(bundleContext, this, configuration.tenant_path_matcher());
-        this.plugin = new WebConsolePlugin(bundleContext, this);
+        this.plugin = new WebConsolePlugin(bundleContext, this, xss);
     }
 
     @Deactivate
@@ -347,7 +352,6 @@ public class TenantProviderImpl implements TenantProvider, TenantManager {
         });
     }
 
-    @SuppressWarnings("serial")
     private Resource createTenantResource(final ResourceResolver resolver, final String tenantId,
             final Map<String, Object> properties) throws PersistenceException {
 
@@ -384,7 +388,17 @@ public class TenantProviderImpl implements TenantProvider, TenantManager {
     }
 
     private Resource getTenantResource(final ResourceResolver resolver, final String tenantId) {
-        return resolver.getResource(tenantRootPath + "/" + tenantId);
+        Resource rsrc = resolver.getResource(tenantRootPath + "/" + tenantId);
+        if ( rsrc == null ) {
+            // this is a hack for special characters that otherwise would need escaping before getResource() is called
+            for(final Resource r : resolver.getResource(tenantRootPath).getChildren()) {
+                if ( tenantId.equals(r.getName())) {
+                    rsrc = r;
+                    break;
+                }
+            }
+        }
+        return rsrc;
     }
 
     private void customizeTenant(final Resource tenantRes, final Tenant tenant, boolean isCreate) {

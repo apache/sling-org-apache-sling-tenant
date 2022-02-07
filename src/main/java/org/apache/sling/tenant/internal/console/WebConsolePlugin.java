@@ -20,6 +20,7 @@ package org.apache.sling.tenant.internal.console;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.net.URLEncoder;
 import java.util.Dictionary;
 import java.util.HashMap;
 import java.util.Hashtable;
@@ -32,9 +33,11 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.sling.tenant.Tenant;
 import org.apache.sling.tenant.internal.TenantProviderImpl;
+import org.apache.sling.xss.XSSAPI;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.Constants;
 import org.osgi.framework.ServiceRegistration;
+import org.slf4j.LoggerFactory;
 
 /**
  * This is a webconsole plugin displaying the active queues, some statistics and
@@ -61,17 +64,11 @@ public class WebConsolePlugin extends HttpServlet {
 
     private TenantProviderImpl tenantProvider;
 
-    private final ServiceRegistration<?> service;
+    private final ServiceRegistration<Servlet> service;
 
-    /** Escape the output for html. */
-    private String escape(final String text) {
-        if (text == null) {
-            return "";
-        }
-        return text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
-    }
+    private final XSSAPI xss;
 
-    public WebConsolePlugin(final BundleContext bundleContext, final TenantProviderImpl tenantProvider) {
+    public WebConsolePlugin(final BundleContext bundleContext, final TenantProviderImpl tenantProvider, final XSSAPI xss) {
         this.tenantProvider = tenantProvider;
 
         Dictionary<String, Object> props = new Hashtable<String, Object>();
@@ -79,16 +76,13 @@ public class WebConsolePlugin extends HttpServlet {
         props.put("felix.webconsole.label", LABEL);
         props.put("felix.webconsole.title", TITLE);
         props.put("felix.webconsole.category", CATEGORY);
-        // props.put("felix.webconsole.configprinter.modes", new String[]{"zip",
-        // "txt"});
 
-        this.service = bundleContext.registerService(Servlet.class.getCanonicalName(), this, props);
+        this.xss = xss;
+        this.service = bundleContext.registerService(Servlet.class, this, props);
     }
 
     public void dispose() {
-        if (this.service != null) {
-            this.service.unregister();
-        }
+        this.service.unregister();
     }
 
     @Override
@@ -113,16 +107,15 @@ public class WebConsolePlugin extends HttpServlet {
         if (msg == null) {
             redirectTo = path;
         } else {
-            redirectTo = path + "?message=" + msg;
+            redirectTo = path.concat("?message=").concat(URLEncoder.encode(msg, "UTF-8"));
         }
 
-        resp.sendRedirect(redirectTo);
+        resp.sendRedirect(resp.encodeRedirectURL(redirectTo));
     }
 
-    private void removeTenant(HttpServletRequest request) {
+    private void removeTenant(final HttpServletRequest request) {
         final String tenantId = request.getParameter(REQ_PRM_TENANT_ID);
         final Tenant tenant = this.tenantProvider.getTenant(tenantId);
-
         if (tenant != null) {
             this.tenantProvider.remove(tenant);
         }
@@ -130,10 +123,9 @@ public class WebConsolePlugin extends HttpServlet {
 
     private void printForm(final PrintWriter pw, final Tenant t, final String buttonLabel, final String cmd) {
         pw.printf("<button class='ui-state-default ui-corner-all' onclick='javascript:cmdsubmit(\"%s\", \"%s\");'>"
-            + "%s</button>", cmd, (t != null ? t.getId() : ""), buttonLabel);
+            + "%s</button>", cmd, (t != null ? xss.encodeForJSString(t.getId()) : ""), xss.encodeForHTML(buttonLabel));
     }
 
-    @SuppressWarnings("serial")
     private Tenant createTenant(HttpServletRequest request) {
         final String tenantName = request.getParameter(REQ_PRM_TENANT_NAME);
         final String tenantId = request.getParameter(REQ_PRM_TENANT_ID);
@@ -189,19 +181,19 @@ public class WebConsolePlugin extends HttpServlet {
                 pw.printf("<p class='statline ui-state-highlight'>Registered Tenants</p>");
             }
             pw.println("<div class='ui-widget-header ui-corner-top buttonGroup'>");
-            pw.printf("<span style='float: left; margin-left: 1em'>Tenant : %s </span>", escape(tenant.getName()));
+            pw.printf("<span style='float: left; margin-left: 1em'>Tenant : %s </span>", xss.encodeForHTML(tenant.getName()));
             this.printForm(pw, tenant, "Remove", "remove");
             pw.println("</div>");
             pw.println("<table class='nicetable'><tbody>");
 
-            pw.printf("<tr><td style='width: 30%%;'>Identifier</td><td>%s</td></tr>", escape(tenant.getId()));
-            pw.printf("<tr><td style='width: 30%%;'>Name</td><td>%s</td></tr>", escape(tenant.getName()));
-            pw.printf("<tr><td style='width: 30%%;'>Description</td><td>%s</td></tr>", escape(tenant.getDescription()));
+            pw.printf("<tr><td style='width: 30%%;'>Identifier</td><td>%s</td></tr>", xss.encodeForHTML(tenant.getId()));
+            pw.printf("<tr><td style='width: 30%%;'>Name</td><td>%s</td></tr>", xss.encodeForHTML(tenant.getName()));
+            pw.printf("<tr><td style='width: 30%%;'>Description</td><td>%s</td></tr>", xss.encodeForHTML(tenant.getDescription()));
             pw.println("</tbody></table>");
         }
         // no existing tenants
         if (count == 0) {
-            pw.printf("<p class='statline ui-state-highlight'>There are not registered tenants</p>");
+            pw.printf("<p class='statline ui-state-highlight'>There are no registered tenants</p>");
         }
     }
 }
