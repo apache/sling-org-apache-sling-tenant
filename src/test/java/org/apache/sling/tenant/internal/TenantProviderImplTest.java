@@ -19,8 +19,6 @@
 package org.apache.sling.tenant.internal;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Field;
-import java.util.HashMap;
 import java.util.Iterator;
 
 import junit.framework.TestCase;

@@ -39,23 +39,14 @@ public class TenantImplTest {
 
     private static final String t1 = "t1";
 
-    private static final String t2 = "t2";
-
     private static final String pt1 = "/etc/tenants/" + t1;
-
-    private static final String pt2 = "/etc/tenants/" + t2;
 
     private static final String n1 = "name1";
 
-    private static final String n2 = "name2";
-
     private static final String d1 = "description1";
-
-    private static final String d2 = "description2";
 
     private static final String p1 = "prop1";
 
-    @SuppressWarnings("serial")
     private static final Set<String> propNamesDefault = new HashSet<String>() {
         {
             add(Tenant.PROP_NAME);
@@ -63,7 +54,6 @@ public class TenantImplTest {
         }
     };
 
-    @SuppressWarnings("serial")
     private static final Set<String> propNamesTest = new HashSet<String>() {
         {
             add(p1);
@@ -88,7 +78,6 @@ public class TenantImplTest {
 
     @Test
     public void test_name_description() {
-        @SuppressWarnings("serial")
         Resource r = new MockResource(pt1, new HashMap<String, Object>() {
             {
                 put(Tenant.PROP_NAME, n1);
@@ -114,7 +103,6 @@ public class TenantImplTest {
 
     @Test
     public void test_property() {
-        @SuppressWarnings("serial")
         Resource r = new MockResource(pt1, new HashMap<String, Object>() {
             {
                 put(p1, p1);

@@ -37,7 +37,6 @@ import org.apache.sling.xss.XSSAPI;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.Constants;
 import org.osgi.framework.ServiceRegistration;
-import org.slf4j.LoggerFactory;
 
 /**
  * This is a webconsole plugin displaying the active queues, some statistics and

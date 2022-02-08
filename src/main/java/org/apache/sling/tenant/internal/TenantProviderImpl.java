@@ -36,7 +36,6 @@ import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
 import org.apache.sling.api.resource.ResourceUtil;
-import org.apache.sling.commons.osgi.ServiceUtil;
 import org.apache.sling.tenant.Tenant;
 import org.apache.sling.tenant.TenantManager;
 import org.apache.sling.tenant.TenantProvider;
@@ -49,6 +48,7 @@ import org.osgi.framework.Constants;
 import org.osgi.framework.Filter;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.InvalidSyntaxException;
+import org.osgi.framework.ServiceReference;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
@@ -152,13 +152,13 @@ public class TenantProviderImpl implements TenantProvider, TenantManager {
     }
 
     @SuppressWarnings("unused")
-    private synchronized void bindTenantSetup(TenantCustomizer action, Map<String, Object> config) {
-        registeredTenantHandlers.put(ServiceUtil.getComparableForServiceRanking(config), action);
+    private synchronized void bindTenantSetup(TenantCustomizer action, ServiceReference<TenantCustomizer> ref) {
+        registeredTenantHandlers.put(ref, action);
     }
 
     @SuppressWarnings("unused")
-    private synchronized void unbindTenantSetup(TenantCustomizer action, Map<String, Object> config) {
-        registeredTenantHandlers.remove(ServiceUtil.getComparableForServiceRanking(config));
+    private synchronized void unbindTenantSetup(TenantCustomizer action, ServiceReference<TenantCustomizer> ref) {
+        registeredTenantHandlers.remove(ref);
     }
 
     private synchronized Collection<TenantCustomizer> getTenantHandlers() {
@@ -166,13 +166,13 @@ public class TenantProviderImpl implements TenantProvider, TenantManager {
     }
 
     @SuppressWarnings("unused")
-    private synchronized void bindHook(TenantManagerHook action, Map<String, Object> config) {
-        registeredHooks.put(ServiceUtil.getComparableForServiceRanking(config), action);
+    private synchronized void bindHook(TenantManagerHook action, ServiceReference<TenantCustomizer> ref) {
+        registeredHooks.put(ref, action);
     }
 
     @SuppressWarnings("unused")
-    private synchronized void unbindHook(TenantManagerHook action, Map<String, Object> config) {
-        registeredHooks.remove(ServiceUtil.getComparableForServiceRanking(config));
+    private synchronized void unbindHook(TenantManagerHook action, ServiceReference<TenantCustomizer> ref) {
+        registeredHooks.remove(ref);
     }
 
     private synchronized Collection<TenantManagerHook> getHooks() {
