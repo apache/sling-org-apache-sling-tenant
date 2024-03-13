@@ -71,19 +71,7 @@ import org.slf4j.LoggerFactory;
             Constants.SERVICE_VENDOR + "=The Apache Software Foundation",
             Constants.SERVICE_DESCRIPTION + "=Apache Sling Tenant Provider"
     },
-    immediate = true,
-    reference = {
-        @Reference(
-            name = "tenantSetup",
-            service = TenantCustomizer.class,
-            cardinality = ReferenceCardinality.MULTIPLE,
-            policy = ReferencePolicy.DYNAMIC),
-        @Reference(
-                name = "hook",
-                service = TenantManagerHook.class,
-                cardinality = ReferenceCardinality.MULTIPLE,
-                policy = ReferencePolicy.DYNAMIC)
-    }
+    immediate = true
 )
 @Designate(ocd = TenantProviderImpl.Configuration.class)
 public class TenantProviderImpl implements TenantProvider, TenantManager {
@@ -151,7 +139,12 @@ public class TenantProviderImpl implements TenantProvider, TenantManager {
         }
     }
 
-    @SuppressWarnings("unused")
+    @Reference(
+            name = "tenantSetup",
+            service = TenantCustomizer.class,
+            cardinality = ReferenceCardinality.MULTIPLE,
+            unbind="unbindTenantSetup",
+            policy = ReferencePolicy.DYNAMIC)
     private synchronized void bindTenantSetup(TenantCustomizer action, ServiceReference<TenantCustomizer> ref) {
         registeredTenantHandlers.put(ref, action);
     }
@@ -165,7 +158,12 @@ public class TenantProviderImpl implements TenantProvider, TenantManager {
         return registeredTenantHandlers.values();
     }
 
-    @SuppressWarnings("unused")
+    @Reference(
+            name = "hook",
+            service = TenantManagerHook.class,
+            cardinality = ReferenceCardinality.MULTIPLE,
+            unbind = "unbindHook",
+            policy = ReferencePolicy.DYNAMIC)
     private synchronized void bindHook(TenantManagerHook action, ServiceReference<TenantCustomizer> ref) {
         registeredHooks.put(ref, action);
     }
