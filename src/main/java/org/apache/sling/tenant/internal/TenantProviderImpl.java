@@ -77,12 +77,16 @@ import org.slf4j.LoggerFactory;
             name = "tenantSetup",
             service = TenantCustomizer.class,
             cardinality = ReferenceCardinality.MULTIPLE,
-            policy = ReferencePolicy.DYNAMIC),
+            policy = ReferencePolicy.DYNAMIC,
+            bind =  "bindTenantSetup",
+            unbind = "unbindTenantSetup"),
         @Reference(
                 name = "hook",
                 service = TenantManagerHook.class,
                 cardinality = ReferenceCardinality.MULTIPLE,
-                policy = ReferencePolicy.DYNAMIC)
+                policy = ReferencePolicy.DYNAMIC,
+                bind =  "bindHook",
+                unbind = "unbindHook")
     }
 )
 @Designate(ocd = TenantProviderImpl.Configuration.class)
