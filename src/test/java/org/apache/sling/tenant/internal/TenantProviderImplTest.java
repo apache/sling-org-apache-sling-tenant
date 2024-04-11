@@ -26,6 +26,7 @@ import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ResourceResolverFactory;
 import org.apache.sling.tenant.Tenant;
 import org.junit.Test;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 import org.osgi.framework.BundleContext;
 
@@ -37,7 +38,7 @@ public class TenantProviderImplTest {
         final BundleContext context = Mockito.mock(BundleContext.class);
         final ResourceResolver rr = Mockito.mock(ResourceResolver.class);
         Mockito.when(rrf.getServiceResourceResolver(
-                Mockito.anyMapOf(String.class, Object.class))).thenReturn(rr);
+                ArgumentMatchers.any())).thenReturn(rr);
         TenantProviderImpl.Configuration configuration = new TenantProviderImpl.Configuration() {
             @Override
             public Class<? extends Annotation> annotationType() {
