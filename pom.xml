@@ -27,7 +27,7 @@
     </parent>
 
     <artifactId>org.apache.sling.tenant</artifactId>
-    <version>1.1.7-SNAPSHOT</version>
+    <version>1.1.8</version>
 
     <name>Apache Sling Tenant</name>
     <description>
@@ -38,11 +38,11 @@
         <connection>scm:git:https://gitbox.apache.org/repos/asf/sling-org-apache-sling-tenant.git</connection>
         <developerConnection>scm:git:https://gitbox.apache.org/repos/asf/sling-org-apache-sling-tenant.git</developerConnection>
         <url>https://github.com/apache/sling-org-apache-sling-tenant.git</url>
-      <tag>HEAD</tag>
+      <tag>org.apache.sling.tenant-1.1.8</tag>
   </scm>
 
     <properties>
-        <project.build.outputTimestamp>1</project.build.outputTimestamp>
+        <project.build.outputTimestamp>1712842262</project.build.outputTimestamp>
         <sling.java.version>8</sling.java.version>
     </properties>
 
